@@ -1,0 +1,92 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Function to read World Bank data and return transposed dataframes
+def read_data(filename):
+    df = pd.read_csv(filename, index_col=[0,1,2])
+    df = df.transpose()
+    df.columns = df.columns.droplevel([0,1])
+    df = df.drop(['Indicator Name', 'Indicator Code'])
+    df.index = pd.to_datetime(df.index)
+    return df, df.T
+
+# Read data
+filename = 'data/ClimateChange.csv'
+data, data_T = read_data(filename)
+
+# Explore statistical properties of indicators
+print(data.describe())
+
+# Plot time series of CO2 emissions and GDP for China and USA
+china = data_T.loc['China']
+usa = data_T.loc['United States']
+plt.plot(china['NY.GDP.MKTP.CD'], label='China GDP')
+plt.plot(china['EN.ATM.CO2E.KT'], label='China CO2')
+plt.plot(usa['NY.GDP.MKTP.CD'], label='USA GDP')
+plt.plot(usa['EN.ATM.CO2E.KT'], label='USA CO2')
+plt.legend()
+plt.show()
+
+# Calculate correlation matrix
+corr_matrix = data.corr()
+print(corr_matrix)
+
+# Plot scatter plot of CO2 emissions vs. GDP
+plt.scatter(data['NY.GDP.MKTP.CD'], data['EN.ATM.CO2E.KT'])
+plt.xlabel('GDP (current US$)')
+plt.ylabel('CO2 emissions (kt)')
+plt.show()
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# function to read and transpose data
+def read_data(file_path):
+    # read data
+    data = pd.read_csv(file_path, skiprows=4)
+    
+    # transpose data and set country name as index
+    data_transposed = data.set_index('Country Name').transpose()
+    
+    # clean column names
+    data_transposed.columns = [col.strip() for col in data_transposed.columns]
+    
+    return data, data_transposed
+
+# function to explore data
+def explore_data(data, indicator_1, indicator_2=None):
+    # select indicators
+    df = data.loc[:, [indicator_1]]
+    if indicator_2:
+        df[indicator_2] = data[indicator_2]
+    
+    # drop rows with missing values
+    df = df.dropna()
+    
+    # print summary statistics
+    print(df.describe())
+    print()
+    
+    # plot time series for each country
+    for country in df.columns:
+        plt.plot(df.index, df[country], label=country)
+    plt.xlabel('Year')
+    plt.ylabel(indicator_1)
+    plt.legend()
+    plt.show()
+    
+    # if second indicator is provided, plot scatter plot
+    if indicator_2:
+        plt.scatter(df[indicator_2], df[indicator_1])
+        plt.xlabel(indicator_2)
+        plt.ylabel(indicator_1)
+        plt.show()
+
+# read and transpose data
+data, data_transposed = read_data('climate-change.csv')
+
+# explore data
+explore_data(data_transposed, 'CO2 emissions (kt)', 'GDP (current US$)')
+explore_data(data_transposed, 'Forest area (sq. km)', 'Arable land (hectares per person)')

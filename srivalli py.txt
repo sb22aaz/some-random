@@ -1,0 +1,59 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Define a function to read and clean World Bank data
+def read_wb_data(filename):
+    # Read data from file
+    df = pd.read_csv(filename, header=2)
+    
+    # Remove unnecessary columns
+    df = df.drop(['Country Code', 'Indicator Name', 'Indicator Code'], axis=1)
+    
+    # Transpose the dataframe and reset index
+    df = df.transpose()
+    df = df.reset_index()
+    
+    # Set column names and remove unnecessary row
+    df.columns = df.iloc[0]
+    df = df.drop(0)
+    
+    # Convert column data types
+    df = df.astype(float)
+    
+    # Return dataframes with years and countries as columns
+    df_years = df.set_index('Country Name')
+    df_countries = df.set_index('Unnamed: 0')
+    
+    return df_years, df_countries
+
+# Example usage
+df_years, df_countries = read_wb_data('climate-change.csv')
+
+# Explore statistical properties of selected indicators
+# Example 1: CO2 emissions (metric tons per capita)
+df_years['CO2 emissions (metric tons per capita)'].describe()
+df_countries.loc['United States']['CO2 emissions (metric tons per capita)']
+
+# Example 2: Access to electricity (% of population)
+df_years['Access to electricity (% of population)'].describe()
+df_countries.loc['India']['Access to electricity (% of population)']
+
+# Explore correlations between indicators
+# Example 1: Population growth and energy consumption
+df_years[['Population growth (annual %)', 'Energy use (kg of oil equivalent per capita)']].corr()
+
+# Example 2: Forest area and CO2 emissions
+df_years[['Forest area (% of land area)', 'CO2 emissions (metric tons per capita)']].corr()
+
+# Visualize trends over time using line plots
+# Example 1: CO2 emissions (metric tons per capita)
+df_years[['United States', 'China', 'India', 'Russia']].plot()
+plt.title('CO2 Emissions by Country')
+plt.xlabel('Year')
+plt.ylabel('CO2 Emissions (metric tons per capita)')
+
+# Example 2: Renewable energy consumption (% of total final energy consumption)
+df_years[['United States', 'China', 'India', 'Russia']].plot()
+plt.title('Renewable Energy Consumption by Country')
+plt.xlabel('Year')
+plt.ylabel('Renewable Energy Consumption (% of total final energy consumption)')
